@@ -1185,11 +1185,11 @@ String sendImage(String message, uint8_t *data_pic,size_t size_pic)
   size_t allLen = bodyTxt.length()+bodyPic.length()+size_pic+bodyEnd.length();
   String headerTxt =  header(allLen);
   WiFiClientSecure client;
-   if (!client.connect(SERVER,PORT)) 
+   if (!client.connect(SERVER,443)) 
    {
     return("connection failed");   
    }
-
+Serial.print(456);
    client.print(headerTxt+bodyTxt+bodyPic);
    client.write(data_pic,size_pic);
    client.print("\r\n"+bodyEnd);
@@ -1224,6 +1224,7 @@ String header(size_t length)
       data += String(length);
       data += "\r\n";
       data += "\r\n";
+    Serial.print(data);
     return(data);
 }
 
