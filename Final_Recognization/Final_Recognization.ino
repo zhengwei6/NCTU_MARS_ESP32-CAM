@@ -20,7 +20,7 @@
 #include "WiFiClientSecure.h"
 
 #define CAMERA_MODEL_AI_THINKER
-#define BOUNDARY     "--------------------------133747188241686651551404"  
+#define BOUNDARY     "WebKitFormBoundary7MA4YWxkTrZu0gW"  
 #define PART_BOUNDARY "123456789000000000000987654321"
 
 #define PWDN_GPIO_NUM     32
@@ -69,8 +69,8 @@ typedef struct {
   size_t len;
 } jpg_chunking_t;
 
-const char* ssid = "AndroidAP64A4"; //remember change your SSID 
-const char* password = "666666666";// remember change your SSID PW
+const char* ssid = "cba"; //remember change your SSID 
+const char* password = "11111111";// remember change your SSID PW
 String host="210.60.88.47";
 String url="/machinelearning/customvision.aspx";
 String azureKEY="78b1755b03714bbc8d7aa9071427eee6";
@@ -1169,7 +1169,7 @@ void getPic(){
   else{
      Serial.println ("fb lengte=");
      Serial.println ( fb->len );//jpg filesize 
-     res = sendImage("A54S89EF5",fb->buf,fb->len);
+     res = sendImage(fb->buf,fb->len);
      Serial.println(res);
   }
   
@@ -1177,23 +1177,20 @@ void getPic(){
 }
 
 
-String sendImage(String message, uint8_t *data_pic,size_t size_pic)
+String sendImage(uint8_t *data_pic,size_t size_pic)
 {
-  String bodyTxt =  body("message",message);
-  String bodyPic =  body("imageFile",message);
-  String bodyEnd =  String("--")+BOUNDARY+String("--\r\n");
-  size_t allLen = bodyTxt.length()+bodyPic.length()+size_pic+bodyEnd.length();
+  String bodyPic =  body("imageFile");
+  String bodyEnd =  String("------")+BOUNDARY+String("--\r\n");
+  size_t allLen = bodyPic.length()+size_pic+bodyEnd.length();;
   String headerTxt =  header(allLen);
   WiFiClientSecure client;
    if (!client.connect(SERVER,443)) 
    {
     return("connection failed");   
    }
-Serial.print(456);
-   client.print(headerTxt+bodyTxt+bodyPic);
+   client.print(headerTxt+bodyPic);
    client.write(data_pic,size_pic);
-   client.print("\r\n"+bodyEnd);
-
+   client.print(bodyEnd);
    delay(20);
    long tOut = millis() + TIMEOUT;
    while(client.connected() && tOut > millis()) 
@@ -1201,6 +1198,22 @@ Serial.print(456);
     if (client.available()) 
     {
       String serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      serverRes = client.readStringUntil('\r');
+      Serial.print(serverRes);
+      
         return(serverRes);
     }
    }
@@ -1208,44 +1221,32 @@ Serial.print(456);
 
 String header(size_t length)
 {
-  String  data;
-      data =  F("POST /customvision/v3.0/Prediction/58a8698a-abfb-4732-bfbb-ef5199b4ed0b/detect/iterations/Iteration1/image HTTP/1.1\r\n");
+  String  data; 
+      data =  F("POST /customvision/v3.0/Prediction/58a8698a-abfb-4732-bfbb-ef5199b4ed0b/detect/iterations/Iteration1/image?Prediction-Key=5d6f82f21bc84218b5e1cf90ef808cc7&amp;Content-Type=application/octet-stream HTTP/1.1\r\n");
       data += F("Host: westus2.api.cognitive.microsoft.com\r\n");
-      data += F("Prediction-Key: 5d6f82f21bc84218b5e1cf90ef808cc7\r\n");
       data += F("cache-control: no-cache\r\n");
-      data += F("Content-Type: multipart/form-data; boundary=");
-      data += BOUNDARY;
-      data += "\r\n";
-      data += F("User-Agent: PostmanRuntime/6.4.1\r\n");
+      data += F("Postman-Token: fabaa476-1b26-03d9-3d35-8cb1db436b73\r\n");
+      data += F("Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n");
       data += F("Accept: */*\r\n");
-      data += F("accept-encoding: gzip, deflate\r\n");
       data += F("Connection: keep-alive\r\n");
       data += F("content-length: ");
       data += String(length);
       data += "\r\n";
       data += "\r\n";
-    Serial.print(data);
+     Serial.print(data);
     return(data);
 }
 
-String body(String content , String message)
+String body(String content)
 {
   String data;
-  data = "--";
+  data = "------";
   data += BOUNDARY;
   data += F("\r\n");
-  if(content=="imageFile")
-  {
     data += F("Content-Disposition: form-data; name=\"imageFile\"; filename=\"picture.jpg\"\r\n");
-    data += F("Content-Type: image/jpeg\r\n");
+    data += F("Content-Type: Content-Type: image/jpg\r\n");
     data += F("\r\n");
-  }
-  else
-  {
-    data += "Content-Disposition: form-data; name=\"" + content +"\"\r\n";
-    data += "\r\n";
-    data += message;
-    data += "\r\n";
-  }
-   return(data);
+    data += F("\r\n");
+  Serial.print(data);
+  return(data);
 }
