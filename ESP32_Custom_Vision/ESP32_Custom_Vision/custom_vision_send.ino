@@ -1,33 +1,4 @@
-void custom_vision_send(String filename, String Sendhost, String boundary, String Sendurl, String key){
-  // Read image file from SD Card
-  // create file buffer
-  const int bufSize = 8192;
-  byte clientBuf[bufSize];
-  int  clientCount = 0;
-  File myFile;
-  myFile= SD_MMC.open(filename);
-  int filesize = myFile.size();
-  Serial.print("filesize=");
-  Serial.println(filesize);
-  String fileName = myFile.name();
-  Serial.println("reading file");
-
-  //read file
-  if(myFile){
-    while (myFile.available()){
-      clientBuf[clientCount] = myFile.read();
-      clientCount++;
-      if (clientCount > (bufSize - 1)) 
-      {
-          Serial.print("file exceed size");
-          return ;
-      }
-    }
-  }
-  else{
-    Serial.print("Fail to read file!");
-    return ;
-  }
+void custom_vision_send(String filename , camera_fb_t * fb, String Sendhost, String boundary, String Sendurl, String key){
   // Create postheader,keyheader,bodyheader
   String postheader,keyheader,bodyheader,bodyend;
   Serial.println("Preparing key header");
@@ -37,8 +8,7 @@ void custom_vision_send(String filename, String Sendhost, String boundary, Strin
   Serial.println("Preparing body end");
   bodyend    = bodyend_create(boundary);
   
-  size_t allLen = keyheader.length() + (size_t)filesize + bodyheader.length() + bodyend.length();
-  //size_t allLen = keyheader.length() + bodyheader.length() + bodyend.length();
+  size_t allLen = keyheader.length() + fb->len + bodyheader.length() + bodyend.length();
   Serial.println("Preparing post header");
   postheader = postheader_create(boundary, Sendhost, Sendurl, allLen, key);
   Serial.println("Code: ");
@@ -52,7 +22,8 @@ void custom_vision_send(String filename, String Sendhost, String boundary, Strin
     return;   
   }
   client.print(postheader + keyheader + bodyheader);
-  client.write((const uint8_t *)clientBuf, clientCount);
+  // client write
+  client.write(fb->buf, fb->len);
   client.print(bodyend);
   delay(20);
   long tOut = millis() + TIMEOUT;

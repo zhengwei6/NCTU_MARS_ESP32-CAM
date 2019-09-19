@@ -39,7 +39,7 @@
 #define VSYNC_GPIO_NUM    25
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
-#define SERVER     "westus2.api.cognitive.microsoft.com"
+#define SERVER     "https://westus2.api.cognitive.microsoft.com"
 #define PORT 443
 #define TIMEOUT      20000
 
@@ -945,7 +945,7 @@ void startCameraServer(){
 }
 
 //-----get Pic
-void getPic(String filename){
+camera_fb_t * getPic(String filename){
   Serial.println("Camera capturing:"+ filename);
   camera_fb_t * fb = NULL;
   //esp_err_t res = ESP_OK;
@@ -965,8 +965,8 @@ void getPic(String filename){
       file.write(fb->buf , fb->len); //payload , lengte vd payload
       Serial.println("succes to open file for SD");
   }
-  
-  esp_camera_fb_return(fb);
+  return fb;
+  //esp_camera_fb_return(fb);
 }
 
 void setup() {
@@ -1080,7 +1080,7 @@ void setup() {
 int i=0; //pic count as filename
 void loop() {
   i++;
-  getPic("/pic" + String(i) +".jpg");
+  camera_fb_t * fb = getPic("/pic" + String(i) +".jpg");
   delay(10000);
-  custom_vision_send("/pic" + String(i) +".jpg", host, BOUNDARY ,azureURL, azureKEY);
+  custom_vision_send("/pic" + String(i) +".jpg",fb, host, BOUNDARY ,azureURL, azureKEY);
 }
